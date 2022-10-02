@@ -14,6 +14,7 @@ import { HookProvider } from '@/lib/hooks/use-hook';
 
 import '@rainbow-me/rainbowkit/styles.css';
 import {
+  Chain,
   getDefaultWallets,
   RainbowKitProvider,
 } from '@rainbow-me/rainbowkit';
@@ -23,6 +24,7 @@ import {
   createClient,
   WagmiConfig,
 } from 'wagmi';
+import { jsonRpcProvider } from 'wagmi/providers/jsonRpc';
 import { alchemyProvider } from 'wagmi/providers/alchemy';
 import { publicProvider } from 'wagmi/providers/public';
 
@@ -32,9 +34,31 @@ import '@/assets/css/scrollbar.css';
 import '@/assets/css/globals.css';
 import '@/assets/css/range-slider.css';
 
+const avalancheChain: Chain = {
+  id: 43_114,
+  name: 'Avalanche',
+  network: 'avalanche',
+  iconUrl: 'https://s2.coinmarketcap.com/static/img/coins/64x64/5805.png',
+  iconBackground: '#fff',
+  nativeCurrency: {
+    decimals: 18,
+    name: 'Avalanche',
+    symbol: 'AVAX',
+  },
+  rpcUrls: {
+    default: 'https://api.avax.network/ext/bc/C/rpc',
+  },
+  blockExplorers: {
+    default: { name: 'SnowTrace', url: 'https://snowtrace.io' },
+    etherscan: { name: 'SnowTrace', url: 'https://snowtrace.io' },
+  },
+  testnet: false,
+};
+
 const { chains, provider } = configureChains(
-  [chain.mainnet, chain.polygon, chain.optimism, chain.arbitrum],
+  [avalancheChain, chain.mainnet, chain.polygon, chain.optimism, chain.arbitrum],
   [
+    jsonRpcProvider({ rpc: chain => ({ http: chain.rpcUrls.default }) }),
     alchemyProvider({ apiKey: process.env.ALCHEMY_ID }),
     publicProvider()
   ]

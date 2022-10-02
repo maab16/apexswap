@@ -28,15 +28,19 @@ export const dexList = [
     dex: 'GMX'
   },
   {
-    address: '0x623DC9E82F055471B7675503e8deF05A35EBeA19', //trader joe
+    address: '0x623DC9E82F055471B7675503e8deF05A35EBeA19', //tr
     dex: 'LydiaFinance'
   },
   {
-    address: '0x9cef6314A4a9Cc6D1DC5099411Bf3Dd3d3c5C170', //Platypus
+    address: '0xE5a6a4279D1517231a84Fae629E433b312fe89D7', //yk's
     dex: 'WooFi'
   },
   {
-    address: '0x623DC9E82F055471B7675503e8deF05A35EBeA19', //Platypus
+    address: '0x623DC9E82F055471B7675503e8deF05A35EBeA19', //pt
     dex: 'UniswapForkOptimized'
+  },
+  {
+    address: '0x491dc06178CAF5b962DB53576a8A1456a8476232', //yk's
+    dex: 'Curve'
   },
 ];

@@ -48,8 +48,9 @@ const SwapPage: NextPageWithLayout = () => {
 
 
   const [marketData, setMarketData] = useState({});
+  const swap_fee = 0.00045;
 
-  const [tokenInIndex, setTokenInIndex] = useState(1); //wavax
+  const [tokenInIndex, setTokenInIndex] = useState(0); //avax
   const [tokenInPrice, setTokenInPrice] = useState(0);
   const [tokenIn, setTokenIn] = useState('');
   const [tokenInBalance, setTokenInBalance] = useState(0);
@@ -84,6 +85,7 @@ const SwapPage: NextPageWithLayout = () => {
   const [finalToken, setFinalToken] = useState("");
 
   const [devenv] = useState(false);
+  const [isExpertMode, setIsExpertMode] = useState(false);
   const getBalance = async (token_address: string) => {
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     await provider.send('eth_requestAccounts', []);
@@ -410,7 +412,7 @@ const SwapPage: NextPageWithLayout = () => {
       signer
     );
 
-    //wrap,unwrap
+    //AVAX <-> WAVAX
     const wavaxContract = new ethers.Contract(WAVAX.address, WAVAX.abi, signer);
     if (isNatativeToken(tokenIn) && isWavax(tokenOut)
     ) {
@@ -460,7 +462,17 @@ const SwapPage: NextPageWithLayout = () => {
 
 
     //multihop
-    await vixrouterContract.swapMultihop(new_tokenIn, new_tokenOut, parsed_amountIn, branches);
+    var fee = swap_fee * 100000; //0.00045 -> 45
+    if (isNatativeToken(tokenIn))
+      await vixrouterContract.swapMultihopFromAvax(new_tokenIn, new_tokenOut, parsed_amountIn, branches, address, fee,
+        {
+          value: ethers.utils.parseEther(String(amountIn)),
+        });
+    else if (isNatativeToken(tokenOut))
+      await vixrouterContract.swapMultihopToAvax(new_tokenIn, new_tokenOut, parsed_amountIn, branches, address, fee);
+    else
+      await vixrouterContract.swapMultihop(new_tokenIn, new_tokenOut, parsed_amountIn, branches, address, fee);
+
     return;
 
     //findBestPath
@@ -514,7 +526,7 @@ const SwapPage: NextPageWithLayout = () => {
         description="Apexswap - Avalanche DEX"
       />
 
-      <div className="grid grid-cols-1 gap-16 xl:grid-cols-3 xl:place-items-start mt-12">
+      <div className={`grid grid-cols-1 gap-16 xl:place-items-start mt-12 ${isExpertMode ? 'xl:grid-cols-3' : 'xl:grid-cols-12'}`}>
         {/* Swap box */}
         <div className="mx-auto flex flex-col gap-3 xl:col-span-1 rounded-[1px] outline outline-[#0D0C52] outline-offset-[16px] outline-1">
           <div
@@ -527,12 +539,12 @@ const SwapPage: NextPageWithLayout = () => {
             </span>
             <Switch
               className="ml-2 grid grid-cols-1 place-items-center rounded-full border-2 border-[#FEB58D]"
-              checked={swch1}
-              onChange={() => setSwch1(!swch1)}
+              checked={isExpertMode}
+              onChange={() => setIsExpertMode(!isExpertMode)}
             >
               <div
                 className={cn(
-                  swch1
+                  isExpertMode
                     ? 'bg-brand dark:bg-transparent'
                     : 'bg-gray-200 dark:bg-transparent',
                   'relative inline-flex h-[12px] w-[28px] items-center rounded-full transition-colors duration-300'
@@ -540,7 +552,7 @@ const SwapPage: NextPageWithLayout = () => {
               >
                 <span
                   className={cn(
-                    swch1
+                    isExpertMode
                       ? 'bg-white ltr:translate-x-4 rtl:-translate-x-4 dark:bg-[#FEB58D]'
                       : 'bg-white ltr:translate-x-0.5 rtl:-translate-x-0.5 dark:bg-[#FEB58D]',
                     'inline-block h-[10px] w-[10px] transform rounded-full bg-white duration-200'
@@ -755,7 +767,7 @@ const SwapPage: NextPageWithLayout = () => {
             <div className="flex flex-col gap-4 xs:gap-[18px]">
               <TransactionInfo
                 label={'Minimum Received'}
-                value={`${Number(amountOut * 0.98).toFixed(
+                value={`${Number(amountOut * (1 - swap_fee)).toFixed(
                   3
                 )} ${getCoinName(tokenOut)}`}
               />
@@ -778,7 +790,7 @@ const SwapPage: NextPageWithLayout = () => {
               <TransactionInfo label={'Price Slippage'} value={tolerance} /> */}
               <TransactionInfo
                 label={'Liquidity Provider Fee'}
-                value={`${Number(amountIn * 0.00045).toLocaleString()} ${getCoinName(tokenIn)}`}
+                value={`${Number(amountIn * swap_fee).toFixed(5)} ${getCoinName(tokenIn)}`}
               />
               {/* <TransactionInfo label={'Best Dex'} value={getDexName(bestDex) + " : " + Number(bestAmountOut).toFixed(6) + " " + getCoinName(tokenOut)} /> */}
             </div>
@@ -893,9 +905,9 @@ const SwapPage: NextPageWithLayout = () => {
         </div>
 
         {/* Rigth side */}
-        <div className="md:block text-large rounded-[4px] text-center shadow-card outline outline-1 outline-offset-[16px] outline-[#0D0C52] xl:col-span-2 ">
+        {isExpertMode && <div className="text-large rounded-[4px] text-center shadow-card outline outline-1 outline-offset-[16px] outline-[#0D0C52] xl:col-span-2 ">
           {/* Market Data-Chart subPanel */}
-          <div className="hidden md:block md:max-w-[709px] md:rounded-[10px] md:px-8 md:dark:bg-[#0D0C52] md:min-w-[709px]">
+          <div className="md:max-w-[709px] md:rounded-[10px] md:px-8 md:dark:bg-[#0D0C52] md:min-w-[709px]">
             <div className="min-h-[50px] ">
               <MarketData
                 token_address1={tokenIn}
@@ -999,7 +1011,7 @@ const SwapPage: NextPageWithLayout = () => {
             </div>
           </div>
 
-        </div>
+        </div>}
       </div>
     </>
   );

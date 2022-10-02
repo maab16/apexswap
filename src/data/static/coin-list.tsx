@@ -48,7 +48,7 @@ export const coinList = [
   //trusted tokens
   {
     code: 'AVAX',
-    name: 'Avalanche',
+    name: 'AVAX',
     address: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee', // native token address
     icon: <Image src={Avalanche}  width='24px' height='24px' />,
     icon1: <Image src={Avalanche}  width='14px' height='14px' />,
