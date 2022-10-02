@@ -469,7 +469,15 @@ td {
 }
 
 .swap-wallet-connect button {
+  width: 220px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   background: linear-gradient(270deg, #FF6060 0%, #F99820 100%) !important;
+}
+
+.swap-balance.disabled {
+  background: gray !important;
 }
 
 @media only screen and (max-width: 500px) {

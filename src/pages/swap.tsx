@@ -30,7 +30,6 @@ import { HookContext } from '@/lib/hooks/use-hook';
 import { WalletContext } from '@/lib/hooks/use-connect';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 
-
 // Create your atoms and derivatives
 var routingAtom, toSettingsAtom;
 export function useRoutingAtom() {
@@ -41,11 +40,20 @@ export function useSettingsAtom() {
 }
 
 const SwapPage: NextPageWithLayout = () => {
-  const { coinslist, getCoinDecimals, getCoinName, getCoinIcon, getCoinCode,
-    isNatativeToken, isWavax, addressForRoute } =
-    useContext(HookContext);
-  const { address, disconnectWallet, balance, chainId, swtichNetwork } = useContext(WalletContext);
+  const {
+    coinslist,
+    getCoinDecimals,
+    getCoinName,
+    getCoinIcon,
+    getCoinCode,
+    isNatativeToken,
+    isWavax,
+    addressForRoute,
+  } = useContext(HookContext);
+  const { address, disconnectWallet, balance, chainId, swtichNetwork } =
+    useContext(WalletContext);
 
+  const [isAddress, setIsAddress] = useState(false);
 
   const [marketData, setMarketData] = useState({});
   const swap_fee = 0.00045;
@@ -63,7 +71,7 @@ const SwapPage: NextPageWithLayout = () => {
   const [amountIn, setAmountIn] = useState(1);
   const [amountOut, setAmountOut] = useState(0);
 
-  const [side, setSide] = useState("SELL");
+  const [side, setSide] = useState('SELL');
 
   const [loading, setLoading] = useState(false);
 
@@ -82,10 +90,10 @@ const SwapPage: NextPageWithLayout = () => {
   const [branches, setBranches] = useState([]);
   const [rouTes, setRouTes] = useState([]);
   const [routeSwaps, setRouteSwaps] = useState([]);
-  const [finalToken, setFinalToken] = useState("");
+  const [finalToken, setFinalToken] = useState('');
 
   const [devenv] = useState(false);
-  const [isExpertMode, setIsExpertMode] = useState(false);
+  let [isExpertMode, setIsExpertMode] = useState(false);
   const getBalance = async (token_address: string) => {
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     await provider.send('eth_requestAccounts', []);
@@ -93,6 +101,9 @@ const SwapPage: NextPageWithLayout = () => {
     if (isNatativeToken(token_address)) {
       let userAddress = await signer.getAddress();
       console.log('userAddress1 => ', userAddress);
+      if (userAddress != '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee') {
+        setIsAddress(true);
+      }
       const balance = await provider.getBalance(userAddress);
       return Number(
         ethers.utils.formatUnits(balance, getCoinDecimals(token_address))
@@ -128,6 +139,7 @@ const SwapPage: NextPageWithLayout = () => {
       var tokenout_address = coinslist[tokenOutIndex].address;
       setTokenOut(tokenout_address);
       var balance = await getBalance(tokenout_address);
+
       setTokenOutBalance(balance);
     })();
   }, [tokenOutIndex]);
@@ -228,7 +240,7 @@ const SwapPage: NextPageWithLayout = () => {
   const [seconds, setSeconds] = useState(0);
   useEffect(() => {
     const interval = setInterval(() => {
-      setSeconds(seconds => seconds + 1);
+      setSeconds((seconds) => seconds + 1);
     }, 1000);
     return () => clearInterval(interval);
   }, []);
@@ -251,24 +263,28 @@ const SwapPage: NextPageWithLayout = () => {
       i_branch.swaps.map((i_swap) => {
         var swapExchanges = [];
         i_swap.swapExchanges.map((i_swapExchange) => {
-
-          swapExchanges.push([getDexAddress(i_swapExchange.exchange), Math.floor(i_swapExchange.percent), 0, 0])
-        })
-        swaps.push([i_swap.srcToken, i_swap.destToken, 0, 0, swapExchanges])
-      })
+          swapExchanges.push([
+            getDexAddress(i_swapExchange.exchange),
+            Math.floor(i_swapExchange.percent),
+            0,
+            0,
+          ]);
+        });
+        swaps.push([i_swap.srcToken, i_swap.destToken, 0, 0, swapExchanges]);
+      });
       var branch = [i_branch.percent, 0, 0, swaps];
-      branches.push(branch)
-    })
+      branches.push(branch);
+    });
     // console.log(smartroute.bestRoute, '-------------->smartroute')
     // console.log(branches, '-------------->branches')
-    setBranches(branches)
+    setBranches(branches);
   }, [smartroute]);
 
   //query
   const query = async () => {
     var new_tokenIn = addressForRoute(tokenIn);
     var new_tokenOut = addressForRoute(tokenOut);
-    console.log(tokenIn, new_tokenIn, tokenOut, new_tokenOut)
+    console.log(tokenIn, new_tokenIn, tokenOut, new_tokenOut);
     if (
       (isNatativeToken(tokenIn) && isWavax(tokenOut)) ||
       (isNatativeToken(tokenOut) && isWavax(tokenIn))
@@ -282,8 +298,14 @@ const SwapPage: NextPageWithLayout = () => {
 
     const getSmartRoute = async () => {
       try {
-        var amount = side == "SELL" ? ethers.utils.parseUnits(String(amountIn), getCoinDecimals(new_tokenIn)).toString() :
-          ethers.utils.parseUnits(String(amountOut), getCoinDecimals(new_tokenOut)).toString()
+        var amount =
+          side == 'SELL'
+            ? ethers.utils
+                .parseUnits(String(amountIn), getCoinDecimals(new_tokenIn))
+                .toString()
+            : ethers.utils
+                .parseUnits(String(amountOut), getCoinDecimals(new_tokenOut))
+                .toString();
 
         var payload = {
           srcToken: new_tokenIn,
@@ -295,7 +317,6 @@ const SwapPage: NextPageWithLayout = () => {
         console.log(payload);
         const params = new URLSearchParams(payload);
 
-
         let res = await axios.post(
           `http://198.211.100.213:8000/getRate?${params}`
         );
@@ -304,21 +325,27 @@ const SwapPage: NextPageWithLayout = () => {
         setSmartroute(data);
         console.log('smartRoute => ', data);
 
-        if (side == "SELL") {
+        if (side == 'SELL') {
           let destAmount = data.destAmount;
-          destAmount = Number(ethers.utils.formatUnits(destAmount, getCoinDecimals(new_tokenOut)));
-          console.log(destAmount)
-          setAmountOut(destAmount)
+          destAmount = Number(
+            ethers.utils.formatUnits(destAmount, getCoinDecimals(new_tokenOut))
+          );
+          console.log(destAmount);
+          setAmountOut(destAmount);
         } else {
           let srcAmount = data.srcAmount;
-          srcAmount = Number(ethers.utils.formatUnits(srcAmount, getCoinDecimals(new_tokenIn)));
-          console.log(srcAmount)
-          setAmountIn(srcAmount)
+          srcAmount = Number(
+            ethers.utils.formatUnits(srcAmount, getCoinDecimals(new_tokenIn))
+          );
+          console.log(srcAmount);
+          setAmountIn(srcAmount);
         }
 
         let routes = data.bestRoute;
         setRouTes(routes);
-        if (data.destToken) { setFinalToken(data.destToken); }
+        if (data.destToken) {
+          setFinalToken(data.destToken);
+        }
         let swaps = [];
         let route_swaps = [];
         for (let i = 0; i < routes.length; i++) {
@@ -396,11 +423,13 @@ const SwapPage: NextPageWithLayout = () => {
     } catch (e) {
       console.log('query', e);
     }
-  }
+  };
 
   //swap
   const swap = async () => {
-
+    if (tokenInBalance == 0 || tokenInBalance < amountIn) {
+      return;
+    }
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     await provider.send('eth_requestAccounts', []);
     const signer = provider.getSigner();
@@ -414,15 +443,13 @@ const SwapPage: NextPageWithLayout = () => {
 
     //AVAX <-> WAVAX
     const wavaxContract = new ethers.Contract(WAVAX.address, WAVAX.abi, signer);
-    if (isNatativeToken(tokenIn) && isWavax(tokenOut)
-    ) {
+    if (isNatativeToken(tokenIn) && isWavax(tokenOut)) {
       await wavaxContract.deposit({
         value: ethers.utils.parseEther(String(amountIn)),
       });
       return;
     }
-    if (isNatativeToken(tokenOut) && isWavax(tokenIn)
-    ) {
+    if (isNatativeToken(tokenOut) && isWavax(tokenIn)) {
       await wavaxContract.withdraw(ethers.utils.parseEther(String(amountIn)));
       return;
     }
@@ -460,18 +487,38 @@ const SwapPage: NextPageWithLayout = () => {
       getCoinDecimals(new_tokenIn)
     );
 
-
     //multihop
     var fee = swap_fee * 100000; //0.00045 -> 45
     if (isNatativeToken(tokenIn))
-      await vixrouterContract.swapMultihopFromAvax(new_tokenIn, new_tokenOut, parsed_amountIn, branches, address, fee,
+      await vixrouterContract.swapMultihopFromAvax(
+        new_tokenIn,
+        new_tokenOut,
+        parsed_amountIn,
+        branches,
+        address,
+        fee,
         {
           value: ethers.utils.parseEther(String(amountIn)),
-        });
+        }
+      );
     else if (isNatativeToken(tokenOut))
-      await vixrouterContract.swapMultihopToAvax(new_tokenIn, new_tokenOut, parsed_amountIn, branches, address, fee);
+      await vixrouterContract.swapMultihopToAvax(
+        new_tokenIn,
+        new_tokenOut,
+        parsed_amountIn,
+        branches,
+        address,
+        fee
+      );
     else
-      await vixrouterContract.swapMultihop(new_tokenIn, new_tokenOut, parsed_amountIn, branches, address, fee);
+      await vixrouterContract.swapMultihop(
+        new_tokenIn,
+        new_tokenOut,
+        parsed_amountIn,
+        branches,
+        address,
+        fee
+      );
 
     return;
 
@@ -486,7 +533,7 @@ const SwapPage: NextPageWithLayout = () => {
     setPath(path);
     setAmounts(amounts);
 
-    //swap  
+    //swap
     var parsed_amountOut = ethers.utils.parseEther('0');
     var _trade = [parsed_amountIn, parsed_amountOut, path, adapters];
     var _to = userAddress;
@@ -498,8 +545,6 @@ const SwapPage: NextPageWithLayout = () => {
     else if (isNatativeToken(tokenOut)) {
       await vixrouterContract.swapNoSplitToAVAX(_trade, _to, _fee);
     } else await vixrouterContract.swapNoSplit(_trade, _to, _fee);
-
-
   };
 
   const toggleTokens = () => {
@@ -526,15 +571,11 @@ const SwapPage: NextPageWithLayout = () => {
         description="Apexswap - Avalanche DEX"
       />
 
-      <div className={`grid grid-cols-1 gap-16 xl:place-items-start mt-12 ${isExpertMode ? 'xl:grid-cols-3' : 'xl:grid-cols-12'}`}>
+      <div className={`${isExpertMode ? 'grid xl:grid-cols-3' : 'flex justify-center'} mt-12 grid-cols-1 gap-16 xl:place-items-start `}>
         {/* Swap box */}
-        <div className="mx-auto flex flex-col gap-3 xl:col-span-1 rounded-[1px] outline outline-[#0D0C52] outline-offset-[16px] outline-1">
-          <div
-            className="w-1/2 mx-auto flex flex-row items-center rounded-[6px] px-2 outline outline-1 outline-offset-[4px] outline-[#0D0C52]"
-          >
-            <span
-              className="primary-font-family font-size-14"
-            >
+        <div className="mx-auto flex flex-col gap-3 rounded-[1px] outline outline-1 outline-offset-[16px] outline-[#0D0C52] xl:col-span-1">
+          <div className="mx-auto flex w-1/2 flex-row items-center rounded-[6px] px-2 outline outline-1 outline-offset-[4px] outline-[#0D0C52]">
+            <span className="primary-font-family font-size-14">
               Expert Mode
             </span>
             <Switch
@@ -574,7 +615,7 @@ const SwapPage: NextPageWithLayout = () => {
                 >
                   <li className="" role="presentation">
                     <button
-                      className="inline-block rounded-t-lg py-4 text-gray-300 focus:border-b-3 focus:border-b-[#FEB58D] dark:hover:text-gray-200 dark:focus:text-white primary-font-family font-size-14"
+                      className="primary-font-family font-size-14 inline-block rounded-t-lg py-4 text-gray-300 focus:border-b-3 focus:border-b-[#FEB58D] dark:hover:text-gray-200 dark:focus:text-white"
                       id="profile-tab"
                       data-tabs-target="#profile"
                       type="button"
@@ -619,7 +660,7 @@ const SwapPage: NextPageWithLayout = () => {
                   {/* <div> */}
                   <CoinInput
                     label={'From'}
-                    isInbox={side == "SELL"}
+                    isInbox={side == 'SELL'}
                     usdPrice={tokenInPrice}
                     defaultValue={amountIn}
                     showvalue={amountIn}
@@ -629,7 +670,7 @@ const SwapPage: NextPageWithLayout = () => {
                       setTokenInIndex(tokenIndex);
                     }}
                     onchangeAmount={(value) => {
-                      setSide("SELL");
+                      setSide('SELL');
                       clearOutput();
                       setAmountIn(Number(value));
                     }}
@@ -655,7 +696,7 @@ const SwapPage: NextPageWithLayout = () => {
                   </div>
                   <CoinInput
                     label={'To(Estimated)'}
-                    isInbox={side == "BUY"}
+                    isInbox={side == 'BUY'}
                     usdPrice={tokenOutPrice}
                     defaultValue={amountOut}
                     showvalue={amountOut}
@@ -666,7 +707,7 @@ const SwapPage: NextPageWithLayout = () => {
                       setTokenOutIndex(tokenIndex);
                     }}
                     onchangeAmount={(value) => {
-                      setSide("BUY");
+                      setSide('BUY');
                       clearOutput();
                       setAmountOut(Number(value));
                     }}
@@ -741,9 +782,7 @@ const SwapPage: NextPageWithLayout = () => {
               <div className="my-4 flex flex-row justify-between text-[#FEB58D]">
                 <div className="grid grid-cols-1 place-items-center">
                   <div className="flex items-center font-medium">
-                    <span
-                      className="mr-2 primary-font-family font-size-10"
-                    >
+                    <span className="primary-font-family font-size-10 mr-2">
                       Slippage Tolerance
                     </span>
                     <div
@@ -777,20 +816,22 @@ const SwapPage: NextPageWithLayout = () => {
                   'flex items-center justify-between dark:text-gray-300'
                 )}
               >
-                <span
-                  className="font-medium primary-font-family font-size-10"
-                >
+                <span className="primary-font-family font-size-10 font-medium">
                   {'Price Impact'}
                 </span>
-                <span className="text-[#EB5757] primary-font-family font-size-10">
-                  {`${Number((1 - smartroute.destUSD / smartroute.srcUSD) * 100).toFixed(4)}%`}
+                <span className="primary-font-family font-size-10 text-[#EB5757]">
+                  {`${Number(
+                    (1 - smartroute.destUSD / smartroute.srcUSD) * 100
+                  ).toFixed(4)}%`}
                 </span>
               </div>
               {/* <TransactionInfo label={'TxSpeed'} value={txSpeed} />
               <TransactionInfo label={'Price Slippage'} value={tolerance} /> */}
               <TransactionInfo
                 label={'Liquidity Provider Fee'}
-                value={`${Number(amountIn * swap_fee).toFixed(5)} ${getCoinName(tokenIn)}`}
+                value={`${Number(amountIn * swap_fee).toFixed(5)} ${getCoinName(
+                  tokenIn
+                )}`}
               />
               {/* <TransactionInfo label={'Best Dex'} value={getDexName(bestDex) + " : " + Number(bestAmountOut).toFixed(6) + " " + getCoinName(tokenOut)} /> */}
             </div>
@@ -813,7 +854,7 @@ const SwapPage: NextPageWithLayout = () => {
 
             {/* Button */}
             <div className="mt-5 grid grid-cols-1 place-items-center">
-              {!address ?
+              {!isAddress ? (
                 // <Button
                 //   size="mini"
                 //   shape="pill"
@@ -823,36 +864,82 @@ const SwapPage: NextPageWithLayout = () => {
                 //   <span>Connect Wallet</span>
                 // </Button>
 
-                <div className='swap-wallet-connect'>
-                  <ConnectButton />
-                </div>
-                : loading ?
-                  <Button
-                    size="mini"
-                    shape="pill"
-                    className="mt-1 h-[32px] w-[153px] py-1 px-3 primary-font-family font-size-14 bg-leanear-gradient"
-                  >
-                    <span>Loading ...</span>
-                  </Button>
-                  : tokenInBalance >= amountIn ?
-                    <Button
-                      size="mini"
-                      shape="pill"
-                      className="mt-1 h-[32px] w-[153px] py-1 px-3 primary-font-family font-size-14 bg-leanear-gradient"
-                      onClick={() => {
-                        swap();
+                <div className="swap-wallet-connect">
+                  <ConnectButton.Custom>
+                  {({
+                        account,
+                        chain,
+                        openAccountModal,
+                        openChainModal,
+                        openConnectModal,
+                        authenticationStatus,
+                        mounted,
+                      }) => {
+                        // Note: If your app doesn't use authentication, you
+                        // can remove all 'authenticationStatus' checks
+                        const ready = mounted && authenticationStatus !== 'loading';
+                        const connected =
+                          ready &&
+                          account &&
+                          chain &&
+                          (!authenticationStatus ||
+                            authenticationStatus === 'authenticated');
+                        
+                        if (connected) {
+                          setIsAddress(true);
+                        }
+
+                        return (
+                          <div
+                            {...(!ready && {
+                              'aria-hidden': true,
+                              'style': {
+                                opacity: 0,
+                                pointerEvents: 'none',
+                                userSelect: 'none',
+                              },
+                            })}
+                          >
+                            {(() => {
+                              if (!connected) {
+                                return (
+                                  <button onClick={openConnectModal} type="button">
+                                    Connect Wallet
+                                  </button>
+                                );
+                              }
+
+                              // if (chain.unsupported) {
+                              //   return (
+                              //     <button onClick={openChainModal} type="button">
+                              //       Wrong network
+                              //     </button>
+                              //   );
+                              // }
+                            })()}
+                          </div>
+                        );
                       }}
-                    >
-                      <span>SWAP</span>
-                    </Button>
-                    :
-                    <Button
-                      size="mini"
-                      shape="pill"
-                      className="mt-1 h-[32px] w-[153px] py-1 px-3 primary-font-family font-size-14 bg-leanear-gradient"
-                    >
-                      <span>Insufficient Balance</span>
-                    </Button>}
+                    </ConnectButton.Custom>
+                </div>
+              ) : loading ? (
+                <Button
+                  size="mini"
+                  shape="pill"
+                  className="primary-font-family font-size-14 bg-leanear-gradient mt-1 h-[32px] w-[153px] py-1 px-3"
+                >
+                  <span>Loading ...</span>
+                </Button>
+              ) : <Button
+              size="mini"
+              shape="pill"
+              className={`primary-font-family font-size-14 bg-leanear-gradient mt-1 h-[32px] w-[153px] py-1 px-3 swap-balance ${tokenInBalance == 0 || tokenInBalance < amountIn ? 'disabled' : ''}`}
+              onClick={() => {
+                swap();
+              }}
+            >
+              <span>SWAP</span>
+            </Button>}
             </div>
             <br></br>
             {/* Console */}
@@ -905,9 +992,9 @@ const SwapPage: NextPageWithLayout = () => {
         </div>
 
         {/* Rigth side */}
-        {isExpertMode && <div className="text-large rounded-[4px] text-center shadow-card outline outline-1 outline-offset-[16px] outline-[#0D0C52] xl:col-span-2 ">
+        {isExpertMode && <div className="text-large rounded-[4px] text-center shadow-card outline outline-1 outline-offset-[16px] outline-[#0D0C52] md:block xl:col-span-2 ">
           {/* Market Data-Chart subPanel */}
-          <div className="md:max-w-[709px] md:rounded-[10px] md:px-8 md:dark:bg-[#0D0C52] md:min-w-[709px]">
+          <div className="hidden md:block md:min-w-[709px] md:max-w-[709px] md:rounded-[10px] md:px-8 md:dark:bg-[#0D0C52]">
             <div className="min-h-[50px] ">
               <MarketData
                 token_address1={tokenIn}
@@ -920,97 +1007,121 @@ const SwapPage: NextPageWithLayout = () => {
           </div>
 
           {/* Routing Medium subPanel */}
-          <div className="md:block md:mt-4 md:min-h-[114px] md:max-w-[709px] md:rounded-[10px] md:pt-2 md:pb-6 md:bg-[#0D0C52]">
+          <div className="md:mt-4 md:block md:min-h-[114px] md:max-w-[709px] md:rounded-[10px] md:bg-[#0D0C52] md:pt-2 md:pb-6">
             <div className="py-4 px-8 text-left">
-              <span
-                className="primary-font-family font-size-14 font-weight-600"
-              >
+              <span className="primary-font-family font-size-14 font-weight-600">
                 Routing
               </span>
             </div>
             <div style={{ overflow: 'auto' }}>
               <div
                 className=" md:grid md:grid-cols-12 md:gap-2 "
-              // style={{ display: 'table', width: '100%' }}
+                // style={{ display: 'table', width: '100%' }}
               >
                 <div
                   className="coin-icon col-span-1 max-h-full sm:mx-auto md:flex md:items-start"
-                // style={{ display: 'table-cell', minWidth: '50px' }}
+                  // style={{ display: 'table-cell', minWidth: '50px' }}
                 >
                   <div className="mx-3">{coinslist[tokenInIndex]?.icon}</div>
                 </div>
 
                 <div className=" col-span-10 max-h-full md:my-1">
-                  {Array.isArray(rouTes) ? rouTes.map((element, index) => (
-                    <>
-                      {index == 0 && <div className='col-span-1 flex justify-center md:hidden'>
-                        <img src="/down-arrow.svg" className='md:hidden' alt="Down Arrow" />
-                      </div>}
-                      <div
-                        key={index}
-                        className="md:grid md:grid-cols-12 md:place-items-center md:my-5"
-                      >
-                        <div className="col-span-1">
-                          <div className="grid h-10 md:h-20 max-h-full grid-cols-1 place-items-center gap-2 tracking-tighter text-gray-600 dark:text-blue-400">
-                            <div className="flex flex-row">
-                              <span className=" max-w-full ">
-                                {element.percent}%
-                              </span>
+                  {Array.isArray(rouTes)
+                    ? rouTes.map((element, index) => (
+                        <>
+                          {index == 0 && (
+                            <div className="col-span-1 flex justify-center md:hidden">
+                              <img
+                                src="/down-arrow.svg"
+                                className="md:hidden"
+                                alt="Down Arrow"
+                              />
                             </div>
-                          </div>
-                        </div>
-                        <div className={`col-span-11 w-full flex items-center justify-center px-2 md:px-0 ${routeSwaps[index].length > 1 ? "justify-between" : "justify-center"}`}>
-                          {routeSwaps[index].map((ele, idx) => (
-                            <>
-                              <div
-                                key={idx}
-                                className={`route-box text-sm tracking-tighter text-gray-600 dark:text-blue-400 my-3 md:my-0 ${routeSwaps[index].length == 1 ? "one-route-box" : ""}`}
-                              >
-                                <div className="route-box-top flex items-center">
-                                  {getCoinIcon(ele.destToken)}
-                                  <p className="coin-code-name w-10 max-w-full px-2">
-                                    {getCoinCode(ele.destToken)}
-                                  </p>
+                          )}
+                          <div
+                            key={index}
+                            className="md:my-5 md:grid md:grid-cols-12 md:place-items-center"
+                          >
+                            <div className="col-span-1">
+                              <div className="grid h-10 max-h-full grid-cols-1 place-items-center gap-2 tracking-tighter text-gray-600 dark:text-blue-400 md:h-20">
+                                <div className="flex flex-row">
+                                  <span className=" max-w-full ">
+                                    {element.percent}%
+                                  </span>
                                 </div>
-                                {/* {item.dex.map((element, id) => ( */}
-                                <div className="route-box-bottom flex flex-col">
-                                  {ele.swapExchanges.map((el, i) => (
-                                    <div key={i} className="swap-exchange">
-                                      <div className="swap-exchange-name max-w-full text-center flex justify-between">
-                                        {/* {getDexName(adapters[index])} */}
-                                        <p>{el.exchange}</p>
-                                        <p>{el.percent}%</p>
-                                      </div>
-                                    </div>
-                                  ))}
-                                </div>
-                                {/*  */}
                               </div>
-                              {routeSwaps[index].length > 1 && <div className='col-span-1 hidden md:block'>
-                                <img src="/right-arrow.svg" alt="Right Arrow" />
-                              </div>}
-                            </>
-                          ))}
-                        </div>
-                        {/* <div className="col-span-1"></div> */}
-                      </div>
-                      <div className='col-span-1 flex justify-center md:hidden'>
-                        <img src="/down-arrow.svg" className='md:hidden' alt="Down Arrow" />
-                      </div>
-                    </>
-                  )) : null}
+                            </div>
+                            <div
+                              className={`col-span-11 flex w-full items-center justify-center px-2 md:px-0 ${
+                                routeSwaps[index].length > 1
+                                  ? 'justify-between'
+                                  : 'justify-center'
+                              }`}
+                            >
+                              {routeSwaps[index].map((ele, idx) => (
+                                <>
+                                  <div
+                                    key={idx}
+                                    className={`route-box my-3 text-sm tracking-tighter text-gray-600 dark:text-blue-400 md:my-0 ${
+                                      routeSwaps[index].length == 1
+                                        ? 'one-route-box'
+                                        : ''
+                                    }`}
+                                  >
+                                    <div className="route-box-top flex items-center">
+                                      {getCoinIcon(ele.destToken)}
+                                      <p className="coin-code-name w-10 max-w-full px-2">
+                                        {getCoinCode(ele.destToken)}
+                                      </p>
+                                    </div>
+                                    {/* {item.dex.map((element, id) => ( */}
+                                    <div className="route-box-bottom flex flex-col">
+                                      {ele.swapExchanges.map((el, i) => (
+                                        <div key={i} className="swap-exchange">
+                                          <div className="swap-exchange-name flex max-w-full justify-between text-center">
+                                            {/* {getDexName(adapters[index])} */}
+                                            <p>{el.exchange}</p>
+                                            <p>{el.percent}%</p>
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                    {/*  */}
+                                  </div>
+                                  {routeSwaps[index].length > 1 && (
+                                    <div className="col-span-1 hidden md:block">
+                                      <img
+                                        src="/right-arrow.svg"
+                                        alt="Right Arrow"
+                                      />
+                                    </div>
+                                  )}
+                                </>
+                              ))}
+                            </div>
+                            {/* <div className="col-span-1"></div> */}
+                          </div>
+                          <div className="col-span-1 flex justify-center md:hidden">
+                            <img
+                              src="/down-arrow.svg"
+                              className="md:hidden"
+                              alt="Down Arrow"
+                            />
+                          </div>
+                        </>
+                      ))
+                    : null}
                 </div>
 
                 <div
                   className="coin-icon col-span-1 max-h-full sm:mx-auto md:flex md:items-start"
-                // style={{ display: 'table-cell', minWidth: '50px' }}
+                  // style={{ display: 'table-cell', minWidth: '50px' }}
                 >
                   <div className="px-auto">{getCoinIcon(finalToken)}</div>
                 </div>
               </div>
             </div>
           </div>
-
         </div>}
       </div>
     </>
