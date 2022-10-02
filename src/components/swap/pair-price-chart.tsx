@@ -254,8 +254,8 @@ export default function PairPriceChart({
 
       {/* Chart */}
       <Line options={options} data={data} />
-      <div className="md:mx-4 inline-flex gap-1 rounded-md shadow-sm md:gap-16">
-        {/* <div className="hover:text-[#FEB58D] text-sm" style={{ cursor: 'pointer' }}>2022-09-26 09:26</div> */}
+      {/* <div className="md:mx-4 inline-flex gap-1 rounded-md shadow-sm md:gap-16">
+        { <div className="hover:text-[#FEB58D] text-sm" style={{ cursor: 'pointer' }}>2022-09-26 09:26</div>}
         {times.map((ele, index) => (
           <>
             <div
@@ -266,7 +266,7 @@ export default function PairPriceChart({
             </div>
           </>
         ))}
-      </div>
+      </div> */}
     </>
   );
 }

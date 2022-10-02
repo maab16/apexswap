@@ -150,11 +150,11 @@ export default function CoinInput({
               className="font-xs mt-1 text-right text-black primary-font-family font-size-10 font-weight-500"
             >
               {/* = ${showvalue ? Number(showvalue * usdPrice).toFixed(6) : usdPrice ? Number(value) * usdPrice : '0.00'} */}
-              {isInbox && tokenBalance > 0
+              {/* {isInbox && tokenBalance > 0
                 ? `${Number((value / tokenBalance) * 100).toFixed(3)}%`
                 : isInbox
                   ? '---'
-                  : ''}
+                  : ''} */}
             </div>
           </div>
         </div>

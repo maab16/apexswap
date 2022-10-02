@@ -126,7 +126,7 @@ export default function WalletConnect() {
         </Button>} */}
 
       <div className='header-wallet-connect'>
-        <ConnectButton chainStatus={'none'} />
+        <ConnectButton chainStatus={'none'} accountStatus="address" />
       </div>
     </>
   );

@@ -158,7 +158,7 @@ export default function MarketData({ ...props }) {
           >
             <TrendingUp />
           </Button>
-          <Button
+          {/* <Button
             // id="MyElement"
             size="mini"
             shape="circle"
@@ -174,7 +174,7 @@ export default function MarketData({ ...props }) {
             onClick={() => setBarChart(true)}
           >
             <ChartBar />
-          </Button>
+          </Button> */}
         </div>
         {/* <div className="sm:flex sm:flex-row">
           <div className="ml-4 flex items-center">
