@@ -125,7 +125,9 @@ export default function WalletConnect() {
           <span>{address.slice(0, 5)}{'...'}{address.slice(address.length - 4)}</span>        
         </Button>} */}
 
-      <ConnectButton />
+      <div className='header-wallet-connect'>
+        <ConnectButton />
+      </div>
     </>
   );
 }

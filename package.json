@@ -9,7 +9,7 @@
     "start": "next start",
     "lint": "next lint",
     "prepare": "husky install",
-    "export": "npm run build && next export -o _static"
+    "export": "next build && next export"
   },
   "dependencies": {
     "@headlessui/react": "1.6.5",

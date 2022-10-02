@@ -452,6 +452,26 @@ td {
   background-color: #181E2E !important;
 }
 
+/* Header Wallet Connect */
+.header-wallet-connect button,
+.swap-wallet-connect button {
+  background: transparent !important;
+  box-shadow: none !important;
+  border: 1px solid #FEB58D !important;
+  border-radius: 30px !important;
+
+  font-family: var(--primary-font-family) !important;
+  font-style: normal;
+  font-weight: 500 !important;
+  font-size: 14px !important;
+  line-height: 24px !important;
+  color: #FFFFFF !important;
+}
+
+.swap-wallet-connect button {
+  background: linear-gradient(270deg, #FF6060 0%, #F99820 100%) !important;
+}
+
 @media only screen and (max-width: 500px) {
   .main-bg {
     background-position: -900px center;

@@ -28,6 +28,7 @@ import VixRouter from '@/abi/VixRouter.json';
 import { getDexName, getDexAddress } from '@/lib/utils/swap-utils';
 import { HookContext } from '@/lib/hooks/use-hook';
 import { WalletContext } from '@/lib/hooks/use-connect';
+import { ConnectButton } from '@rainbow-me/rainbowkit';
 
 
 // Create your atoms and derivatives
@@ -801,14 +802,18 @@ const SwapPage: NextPageWithLayout = () => {
             {/* Button */}
             <div className="mt-5 grid grid-cols-1 place-items-center">
               {!address ?
-                <Button
-                  size="mini"
-                  shape="pill"
-                  className="mt-1 h-[32px] w-[153px] py-1 px-3 primary-font-family font-size-14 bg-leanear-gradient"
-                  onClick={() => openModal('WALLET_CONNECT_VIEW')}
-                >
-                  <span>Connect Wallet</span>
-                </Button>
+                // <Button
+                //   size="mini"
+                //   shape="pill"
+                //   className="mt-1 h-[32px] w-[153px] py-1 px-3 primary-font-family font-size-14 bg-leanear-gradient"
+                //   onClick={() => openModal('WALLET_CONNECT_VIEW')}
+                // >
+                //   <span>Connect Wallet</span>
+                // </Button>
+
+                <div className='swap-wallet-connect'>
+                  <ConnectButton />
+                </div>
                 : loading ?
                   <Button
                     size="mini"
