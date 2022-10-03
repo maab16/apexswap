@@ -476,6 +476,11 @@ td {
   background: linear-gradient(270deg, #FF6060 0%, #F99820 100%) !important;
 }
 
+.header-wallet-connect button > div{
+  border: 0 !important;
+  color: #ffffff !important;
+}
+
 .swap-balance.disabled {
   background: gray !important;
 }

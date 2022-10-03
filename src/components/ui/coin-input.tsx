@@ -82,32 +82,6 @@ export default function CoinInput({
             <span className="mt-2 mb-0.5 block min-h-[10px] text-xs text-gray-600 dark:text-white">
               {label}{' '}
             </span>
-            {isInbox ? (
-              <div className="flex flex-row gap-1">
-                <div
-                  className="mt-2 mb-0.5 block min-h-[10px] border-b border-b-white text-right text-xs text-gray-600 dark:text-white"
-                  style={{ cursor: 'pointer' }}
-                  onClick={() => {
-                    setValue(tokenBalance / 2);
-                    onchangeAmount(tokenBalance / 2);
-                  }}
-                >
-                  50%
-                </div>
-                <div
-                  className="mt-2 mb-0.5 block min-h-[10px] border-b border-b-white text-right text-xs text-gray-600 dark:text-white"
-                  style={{ cursor: 'pointer' }}
-                  onClick={() => {
-                    setValue(tokenBalance);
-                    onchangeAmount(tokenBalance);
-                  }}
-                >
-                  Max
-                </div>
-              </div>
-            ) : (
-              <></>
-            )}
           </div>
           <div className="flex min-h-[60px] flex-row items-center justify-between">
             <button
@@ -140,15 +114,42 @@ export default function CoinInput({
           </div>
         </div>
         <div className="py-auto block min-h-[28px] rounded-b-[10px] px-4 dark:bg-[#FFFFFF]">
-          <div className="mb-1 flex flex-row justify-between">
+          <div className="flex items-center flex-row justify-between">
             <span
               className="mt-1 text-black primary-font-family font-size-10 font-weight-500"
             >
               Balance: {tokenBalance?.toFixed(6)}
             </span>
             <div
-              className="font-xs mt-1 text-right text-black primary-font-family font-size-10 font-weight-500"
+              className="font-xs text-right text-black primary-font-family font-size-10 font-weight-500"
             >
+              {isInbox ? (
+                <div className="flex h-100 items-center flex-row gap-1">
+                  <div
+                    className="mr-2 block min-h-[10px] border-b border-b-dark text-right text-xs text-gray-600 dark:text-dark"
+                    style={{ cursor: 'pointer' }}
+                    onClick={() => {
+                      setValue(tokenBalance / 2);
+                      onchangeAmount(tokenBalance / 2);
+                    }}
+                  >
+                    50%
+                  </div>
+                  <div
+                    className="block min-h-[10px] border-b border-b-dark text-right text-xs text-gray-600 dark:text-dark"
+                    style={{ cursor: 'pointer' }}
+                    onClick={() => {
+                      setValue(tokenBalance);
+                      onchangeAmount(tokenBalance);
+                    }}
+                  >
+                    Max
+                  </div>
+                </div>
+              ) : (
+                <></>
+              )}
+
               {/* = ${showvalue ? Number(showvalue * usdPrice).toFixed(6) : usdPrice ? Number(value) * usdPrice : '0.00'} */}
               {/* {isInbox && tokenBalance > 0
                 ? `${Number((value / tokenBalance) * 100).toFixed(3)}%`
